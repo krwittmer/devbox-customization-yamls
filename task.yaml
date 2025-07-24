@@ -1,6 +1,6 @@
     # Example task.yaml for installing VS Code
-    name: InstallVSCode
-    description: Installs Visual Studio Code
+    name: InstallVSCodePreviewWithAzFuncTools
+    description: Installs Visual Studio Code Preview and also the Azure Function dev toolchain
     run:
-      file: install-vscode.ps1
+      file: install-vscode-azure-fn.ps1
       parameters: []
