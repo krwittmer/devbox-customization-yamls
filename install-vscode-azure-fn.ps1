@@ -64,4 +64,4 @@ function Invoke-AzCommand {
 # Example usage (disabled by default):
 # Invoke-AzCommand -Command "version"
 
-Write-Host "`n🎉 Setup complete. You’re ready to build Azure Functions in VS Code!" -ForegroundColor Cyan
+Write-Host "`n🎉 Setup complete. You’re ready to build Azure Functions with Visual Studio Code Preview!" -ForegroundColor Cyan
