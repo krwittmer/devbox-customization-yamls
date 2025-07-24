@@ -1,11 +1,13 @@
 # install-vscode-azure-fn.ps1
+#
 # PowerShell script to install VS Code, Azure CLI, Azure Functions Core Tools,
 # and recommended tools for Azure Functions development
+#
 
 Write-Host "🔧 Starting Azure Functions development environment setup..." -ForegroundColor Cyan
 
 # Helper: Install if not already installed
-function Install-App {
+function Install-App-Helper {
     param (
         [string]$PackageId,
         [string]$DisplayName = $PackageId
@@ -20,25 +22,25 @@ function Install-App {
 }
 
 # Install Visual Studio Code
-Install-App -PackageId "Microsoft.VisualStudioCode" -DisplayName "Visual Studio Code"
+Install-App-Helper -PackageId "Microsoft.VisualStudioCode" -DisplayName "Visual Studio Code"
 
 # Install Azure CLI
-Install-App -PackageId "Microsoft.AzureCLI" -DisplayName "Azure CLI"
+Install-App-Helper -PackageId "Microsoft.AzureCLI" -DisplayName "Azure CLI"
 
 # Install Azure Functions Core Tools v4
-Install-App -PackageId "Microsoft.AzureFunctionsCoreTools" -DisplayName "Azure Functions Core Tools"
+Install-App-Helper -PackageId "Microsoft.AzureFunctionsCoreTools" -DisplayName "Azure Functions Core Tools"
 
 # Install Node.js LTS (required for JavaScript/TypeScript Functions)
-Install-App -PackageId "OpenJS.NodeJS.LTS" -DisplayName "Node.js LTS"
+Install-App-Helper -PackageId "OpenJS.NodeJS.LTS" -DisplayName "Node.js LTS"
 
 # Install Git (useful for source control)
-Install-App -PackageId "Git.Git" -DisplayName "Git"
+Install-App-Helper -PackageId "Git.Git" -DisplayName "Git"
 
 # Optional: Python (used in some Azure extensions)
-Install-App -PackageId "Python.Python.3" -DisplayName "Python 3"
+Install-App-Helper -PackageId "Python.Python.3" -DisplayName "Python 3"
 
 # Optional: .NET 8 SDK (for C# Azure Functions)
-Install-App -PackageId "Microsoft.DotNet.SDK.8" -DisplayName ".NET SDK 8"
+Install-App-Helper -PackageId "Microsoft.DotNet.SDK.8" -DisplayName ".NET SDK 8"
 
 # Wrapper: Call Azure CLI in a scriptable way
 function Invoke-AzCommand {
