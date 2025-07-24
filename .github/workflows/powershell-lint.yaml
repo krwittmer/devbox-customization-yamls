@@ -1,0 +1,47 @@
+name: PowerShell Lint
+
+on:
+  push:
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+  pull_request:
+    paths:
+      - '**.ps1'
+      - '**.psm1'
+
+jobs:
+  lint:
+    name: PowerShell Lint Check
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: 🧾 Checkout code
+        uses: actions/checkout@v4
+
+      - name: 🔧 Set up PowerShell
+        uses: PowerShell/setup-powershell@v2
+        with:
+          pwsh-version: 'latest'
+
+      - name: 📦 Install PSScriptAnalyzer
+        run: |
+          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+        shell: pwsh
+
+      - name: 🔍 Run PSScriptAnalyzer
+        run: |
+          $files = Get-ChildItem -Recurse -Include *.ps1, *.psm1
+          if ($files.Count -eq 0) {
+            Write-Host "No PowerShell files found."
+            exit 0
+          }
+          $errors = Invoke-ScriptAnalyzer -Path $files.FullName -Recurse -Severity Warning, Error
+          if ($errors) {
+            $errors | Format-Table -AutoSize
+            Write-Error "PowerShell linting failed. Please fix the issues above."
+            exit 1
+          } else {
+            Write-Host "✅ No issues found by PSScriptAnalyzer."
+          }
+        shell: pwsh
