@@ -1,0 +1,6 @@
+    # Example task.yaml for installing VS Code
+    name: InstallVSCode
+    description: Installs Visual Studio Code
+    run:
+      file: install-vscode.ps1
+      parameters: []
