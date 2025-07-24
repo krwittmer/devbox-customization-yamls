@@ -1,47 +1,71 @@
-name: PowerShell Lint
+name: PowerShell Lint & (optional) Az Validation
 
 on:
   push:
     paths:
-      - '**.ps1'
-      - '**.psm1'
+      - '**/*.ps1'
+      - '**/*.psm1'
   pull_request:
     paths:
-      - '**.ps1'
-      - '**.psm1'
+      - '**/*.ps1'
+      - '**/*.psm1'
 
 jobs:
   lint:
-    name: PowerShell Lint Check
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧾 Checkout code
+      - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: 🔧 Set up PowerShell
-        uses: PowerShell/setup-powershell@v2
+      - name: Setup PowerShell (pwsh)
+        uses: actions/setup-pwsh@v3
         with:
-          pwsh-version: 'latest'
+          version: 'latest'
 
-      - name: 📦 Install PSScriptAnalyzer
-        run: |
-          Install-Module -Name PSScriptAnalyzer -Force -Scope CurrentUser
+      - name: Install PSScriptAnalyzer
         shell: pwsh
-
-      - name: 🔍 Run PSScriptAnalyzer
         run: |
-          $files = Get-ChildItem -Recurse -Include *.ps1, *.psm1
-          if ($files.Count -eq 0) {
-            Write-Host "No PowerShell files found."
-            exit 0
-          }
-          $errors = Invoke-ScriptAnalyzer -Path $files.FullName -Recurse -Severity Warning, Error
-          if ($errors) {
-            $errors | Format-Table -AutoSize
-            Write-Error "PowerShell linting failed. Please fix the issues above."
+          Set-PSRepository PSGallery -InstallationPolicy Trusted
+          Install-Module PSScriptAnalyzer -Force -Scope CurrentUser
+
+      - name: Run PSScriptAnalyzer
+        shell: pwsh
+        run: |
+          $files = Get-ChildItem -Recurse -Include *.ps1,*.psm1
+          if (-not $files) { Write-Host "No PowerShell files found."; exit 0 }
+          $issues = Invoke-ScriptAnalyzer -Path $files.FullName -Severity Warning,Error
+          if ($issues) {
+            $issues | Format-Table -AutoSize
+            Write-Error "Linting found errors or warnings."
             exit 1
           } else {
-            Write-Host "✅ No issues found by PSScriptAnalyzer."
+            Write-Host "✅ No lint issues detected."
           }
-        shell: pwsh
+
+  az-check:
+    needs: lint
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request'
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+
+      - name: Setup PowerShell
+        uses: actions/setup-pwsh@v3
+        with:
+          version: 'latest'
+
+      - name: Login to Azure (using SP credentials)
+        uses: azure/login@v2
+        with:
+          creds: ${{ secrets.AZURE_CREDENTIALS }}
+          enable-AzPSSession: true
+
+      - name: Run Azure PowerShell validation
+        uses: azure/powershell@v2
+        with:
+          inlineScript: |
+            Write-Host "Az CLI version:"; Get-Module Az.Accounts; Get-AzSubscription
+          azPSVersion: 'latest'
